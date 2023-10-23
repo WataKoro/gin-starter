@@ -51,6 +51,18 @@ func (uu *UserUpdaterHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
+	if !utils.IsValidPassword(request.OldPassword) {
+		c.JSON(http.StatusUnauthorized, response.ErrorAPIResponse(http.StatusUnauthorized, "Format Passowrd lama salah"))
+		c.Abort()
+		return
+	}
+
+	if !utils.IsValidPassword(request.NewPassword) {
+		c.JSON(http.StatusUnauthorized, response.ErrorAPIResponse(http.StatusUnauthorized, "Format Password Baru salah"))
+		c.Abort()
+		return
+	}
+
 	if err := uu.userUpdater.ChangePassword(
 		c,
 		middleware.UserID,
@@ -63,7 +75,7 @@ func (uu *UserUpdaterHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success", nil))
+	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "Password change succesfull", nil))
 }
 
 // ForgotPasswordRequest is a handler for forgot password request
@@ -185,22 +197,31 @@ func (uu *UserUpdaterHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	_, err := uu.userFinder.GetUserByID(c, middleware.UserID)
+	// _, err := uu.userFinder.GetUserByID(c, middleware.UserID)
 
-	if err != nil {
-		parseError := errors.ParseError(err)
-		c.JSON(parseError.Code, response.ErrorAPIResponse(parseError.Code, parseError.Message))
+	
+
+	// if err != nil {
+	// 	parseError := errors.ParseError(err)
+	// 	c.JSON(parseError.Code, response.ErrorAPIResponse(parseError.Code, parseError.Message))
+	// 	c.Abort()
+	// 	return
+	// }
+
+	// imagePath, err := uu.cloudStorage.Upload(request.Photo, "users/user/profile")
+
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, response.ErrorAPIResponse(http.StatusBadRequest, err.Error()))
+	// 	c.Abort()
+	// 	return
+	// }
+
+	if !utils.IsValidEmail(request.Email) {
+		c.JSON(http.StatusUnauthorized, response.ErrorAPIResponse(http.StatusUnauthorized, "Format Email salah"))
 		c.Abort()
 		return
 	}
 
-	imagePath, err := uu.cloudStorage.Upload(request.Photo, "users/user/profile")
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.ErrorAPIResponse(http.StatusBadRequest, err.Error()))
-		c.Abort()
-		return
-	}
 
 	dob, err := utils.DateStringToTime(request.DOB)
 
@@ -216,8 +237,6 @@ func (uu *UserUpdaterHandler) UpdateUser(c *gin.Context) {
 		request.Email,
 		request.Name,
 		utils.TimeToNullTime(dob),
-		imagePath,
-		request.PhoneNumber,
 		"system",
 	)
 
@@ -228,7 +247,7 @@ func (uu *UserUpdaterHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success", nil))
+	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success", "Update data berhasil"))
 }
 
 // ActivateDeactivateUser is a handler for activating and deactivating user
@@ -286,7 +305,7 @@ func (uu *UserUpdaterHandler) UpdateAdmin(c *gin.Context) {
 		return
 	}
 
-	imagePath, err := uu.cloudStorage.Upload(request.Photo, "users/admin/profile")
+	// imagePath, err := uu.cloudStorage.Upload(request.Photo, "users/admin/profile")
 
 	if err != nil {
 		c.JSON(errors.ErrInternalServerError.Code, response.ErrorAPIResponse(errors.ErrInternalServerError.Code, errors.ErrInternalServerError.Message))
@@ -309,12 +328,10 @@ func (uu *UserUpdaterHandler) UpdateAdmin(c *gin.Context) {
 		request.Email,
 		request.Name,
 		utils.TimeToNullTime(dob),
-		imagePath,
-		request.PhoneNumber,
 		"system",
 	)
 
-	roleID, err := uuid.Parse(request.RoleID)
+	roleID, err := uuid.Parse(request.RoleId)
 
 	if err != nil {
 		c.JSON(errors.ErrInvalidArgument.Code, response.ErrorAPIResponse(errors.ErrInvalidArgument.Code, errors.ErrInvalidArgument.Message))

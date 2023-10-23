@@ -4,21 +4,34 @@ import (
 	"gin-starter/common/interfaces"
 	"gin-starter/config"
 	"gin-starter/middleware"
+	"gin-starter/response"
+
+	// Auth
 	authhandlerv1 "gin-starter/modules/auth/v1/handler"
 	authservicev1 "gin-starter/modules/auth/v1/service"
+	
+	// Master
 	masterhandlerv1 "gin-starter/modules/master/v1/handler"
 	masterservicev1 "gin-starter/modules/master/v1/service"
+	
+	// Notification
 	notificationhandlerv1 "gin-starter/modules/notification/v1/handler"
 	notificationservicev1 "gin-starter/modules/notification/v1/service"
+	
+	// User
 	userhandlerv1 "gin-starter/modules/user/v1/handler"
 	userservicev1 "gin-starter/modules/user/v1/service"
+	
+	// Book
 	bookhandlerv1 "gin-starter/modules/book/v1/handler"
     bookservicev1 "gin-starter/modules/book/v1/service"
-	"gin-starter/response"
+	
+	// Loan
+	loanhandlerv1 "gin-starter/modules/loans/v1/handler"
+    loanservicev1 "gin-starter/modules/loans/v1/service"
+	
 	"net/http"
-
 	"log"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -120,7 +133,8 @@ func UserFinderHTTPHandler(cfg config.Config, router *gin.Engine, cf userservice
 		v1.GET("/cms/admin/detail/:id", hnd.GetAdminUserByID)
 		v1.GET("/cms/user/list", hnd.GetUsers)
 		v1.GET("/cms/user/detail/:id", hnd.GetUserByID)
-		v1.GET("/cms/roles", hnd.GetRoles)
+		v1.GET("/cms/roles", hnd.GetUserRoles)
+		v1.GET("/cms/role/:id", hnd.GetUserRoles)
 		v1.GET("/cms/permission", hnd.GetPermissions)
 		v1.GET("/cms/user/permission", hnd.GetUserPermissions)
 	}
@@ -131,13 +145,17 @@ func UserCreatorHTTPHandler(cfg config.Config, router *gin.Engine, uc userservic
 	hnd := userhandlerv1.NewUserCreatorHandler(uc, cloudStorage)
 	v1 := router.Group("/v1")
 
+	{
+		v1.POST("/user/register", hnd.RegisterUser)
+	}
+
 	v1.Use(middleware.Auth(cfg))
 	v1.Use(middleware.Admin(cfg))
 	{
 		v1.POST("/cms/user", hnd.CreateUser)
 		v1.POST("/cms/admin/user", hnd.CreateAdmin)
 		v1.POST("/cms/permission", hnd.CreatePermission)
-		v1.POST("/cms/role", hnd.CreateRole)
+		v1.POST("/cms/role", hnd.CreateUserRole)
 	}
 }
 
@@ -154,12 +172,11 @@ func UserUpdaterHTTPHandler(cfg config.Config, router *gin.Engine, uu userservic
 	{
 		v1.PUT("/user/profile", hnd.UpdateUser)
 		v1.PUT("/user/password", hnd.ChangePassword)
-		v1.PUT("/verify/otp", hnd.VerifyOTP)
-		v1.PUT("/resend/otp", hnd.ResendOTP)
 	}
 
 	v1.Use(middleware.Admin(cfg))
 	{
+		v1.PUT("/user/profile/:id", hnd.UpdateUser)
 		v1.PUT("/cms/admin/:id", hnd.UpdateAdmin)
 		v1.PUT("/cms/user/activate/:id", hnd.ActivateDeactivateUser)
 		v1.PUT("/cms/role/:id", hnd.UpdateRole)
@@ -175,6 +192,7 @@ func UserDeleterHTTPHandler(cfg config.Config, router *gin.Engine, ud userservic
 	v1.Use(middleware.Auth(cfg))
 	v1.Use(middleware.Admin(cfg))
 	{
+		v1.DELETE("/cms/user/:id", hnd.DeleteUsers)
 		v1.DELETE("/cms/admin/:id", hnd.DeleteAdmin)
 		v1.DELETE("/cms/role/:id", hnd.DeleteRole)
 	}
@@ -223,5 +241,35 @@ func BookUpdaterHTTPHandler(cfg config.Config, router *gin.Engine, uu bookservic
 	v1.Use(middleware.Admin(cfg))
 	{
 		v1.PUT("/book/update/:id", hnd.UpdateBook)
+	}
+}
+
+// LoanCreatorHTTPHandler is a handler for loan APIs
+func LoanCreatorHTTPHandler(cfg config.Config, router *gin.Engine, lc loanservicev1.LoanCreatorUseCase, cloudStorage interfaces.CloudStorageUseCase) {
+	hnd := loanhandlerv1.NewLoanRequestHandler(lc, cloudStorage)
+	v1 := router.Group("/v1")
+
+	{
+		v1.POST("/loan/request", hnd.CreateLoanRequest)
+	}
+}
+
+func LoanUpdaterHTTPHandler(cfg config.Config, router *gin.Engine, lu loanservicev1.LoanUpdaterUseCase, lf loanservicev1.LoanFinderUseCase, cloudStorage interfaces.CloudStorageUseCase) {
+	hnd := loanhandlerv1.NewLoanUpdaterHandler(lu, lf)
+	v1 := router.Group("/v1")
+
+	v1.Use(middleware.Auth(cfg))
+	v1.Use(middleware.Admin(cfg))
+	{
+		v1.PUT("/loan/update/:id", hnd.ApproveLoan)
+	}
+}
+
+// BookFinderHTTPHandler is a handler for book APIs
+func LoanFinderHTTPHandler(cfg config.Config, router *gin.Engine, lf loanservicev1.LoanFinderUseCase) {
+	hnd := loanhandlerv1.NewLoanFinderHandler(lf)
+	v1 := router.Group("/v1")
+	{
+		v1.GET("/loan/list", hnd.GetLoanRequests)
 	}
 }

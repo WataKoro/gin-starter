@@ -10,6 +10,7 @@ import (
 	notificationBuilder "gin-starter/modules/notification/v1/builder"
 	userBuilder "gin-starter/modules/user/v1/builder"
 	bookBuilder "gin-starter/modules/book/v1/builder"
+	loanBuilder "gin-starter/modules/loans/v1/builder"
 	pubsubSDK "gin-starter/sdk/pubsub"
 	"gin-starter/utils"
 	"io"
@@ -124,6 +125,7 @@ func BuildHandler(cfg config.Config, router *gin.Engine, db *gorm.DB, redisPool 
 	notificationBuilder.BuildNotificationHandler(cfg, router, db, redisPool, awsSession)
 	masterBuilder.BuildMasterHandler(cfg, router, db, redisPool, awsSession)
 	bookBuilder.BuildBookHandler(cfg, router, db, redisPool, awsSession)
+	loanBuilder.BuildLoanHandler(cfg, router, db, redisPool, awsSession)
 }
 
 func checkError(err error) {

@@ -1,30 +1,26 @@
 package resource
 
 import (
-	"mime/multipart"
-	"os"
+	// "mime/multipart"
+	//"os"
 
 	"gin-starter/entity"
-	"gin-starter/utils"
+	//"gin-starter/utils"
 )
 
 type CreateUserRequest struct {
-	Name        string                `form:"name" json:"name" binding:"required"`
-	Email       string                `form:"email" json:"email" binding:"required"`
-	Password    string                `form:"password" json:"password" binding:"required"`
-	DOB         string                `form:"dob" json:"dob" binding:"required"`
-	PhoneNumber string                `form:"phone_number" json:"phone_number" binding:"required"`
-	Photo       *multipart.FileHeader `form:"photo" json:"photo" binding:"required"`
+	Name        string `form:"name" json:"name" binding:"required"`
+	Email       string `form:"email" json:"email" binding:"required"`
+	Password    string `form:"password" json:"password" binding:"required"`
+	DOB         string `form:"dob" json:"dob" binding:"required"`
 }
 
 type CreateAdminRequest struct {
-	Name        string                `form:"name" json:"name" binding:"required"`
-	Email       string                `form:"email" json:"email" binding:"required"`
-	Password    string                `form:"password" json:"password" binding:"required"`
-	DOB         string                `form:"dob" json:"dob" binding:"required"`
-	PhoneNumber string                `form:"phone_number" json:"phone_number" binding:"required"`
-	Photo       *multipart.FileHeader `form:"photo" json:"photo" binding:"required"`
-	RoleID      string                `form:"role_id" json:"role_id" binding:"required"`
+	Name        string `form:"name" json:"name" binding:"required"`
+	Email       string `form:"email" json:"email" binding:"required"`
+	Password    string `form:"password" json:"password" binding:"required"`
+	DOB         string `form:"dob" json:"dob" binding:"required"`
+	RoleId      string `form:"roleid" json:"roleid" `
 }
 
 type UpdateAdminRequest struct {
@@ -32,9 +28,7 @@ type UpdateAdminRequest struct {
 	Name        string                `form:"name" json:"name"`
 	Email       string                `form:"email" json:"email"`
 	DOB         string                `form:"dob" json:"dob"`
-	PhoneNumber string                `form:"phone_number" json:"phone_number"`
-	Photo       *multipart.FileHeader `form:"photo" json:"photo"`
-	RoleID      string                `form:"role_id" json:"role_id" binding:"required"`
+	RoleId      string                `form:"roleid" json:"roleid" `
 }
 
 type UserAdmin struct {
@@ -42,11 +36,8 @@ type UserAdmin struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
 	OTPIsNull   bool   `json:"otp_is_null"`
-	PhoneNumber string `json:"phone_number"`
 	DOB         string `json:"dob"`
-	Status      string `json:"status"`
-	Photo       string `json:"photo"`
-	Role        *Role  `json:"role"`
+	RoleId        *Role  `json:"role"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }
@@ -69,6 +60,10 @@ type DeleteAdminRequest struct {
 	ID string `uri:"id" binding:"required"`
 }
 
+type DeleteUserRequest struct {
+	ID string `uri:"id" binding:"required"`
+}
+
 type GetUserByIDRequest struct {
 	ID string `uri:"id" binding:"required"`
 }
@@ -86,10 +81,10 @@ type GetAdminUsersRequest struct {
 }
 
 func NewUserAdmin(user *entity.User) *UserAdmin {
-	otpIsNull := false
-	if user.OTP.String != "" {
-		otpIsNull = true
-	}
+	// otpIsNull := false
+	// if user.OTP.String != "" {
+	// 	otpIsNull = true
+	// }
 
 	dob := "1970-01-01"
 	if user.DOB.Valid {
@@ -100,13 +95,9 @@ func NewUserAdmin(user *entity.User) *UserAdmin {
 		ID:          user.ID.String(),
 		Name:        user.Name,
 		Email:       user.Email,
-		PhoneNumber: user.PhoneNumber,
 		DOB:         dob,
-		Photo:       utils.ImageFullPath(os.Getenv("IMAGE_HOST"), user.Photo),
-		Status:      user.Status,
-		OTPIsNull:   otpIsNull,
-		Role:        NewRoleResponse(user.UserRole.Role),
-		CreatedAt:   user.CreatedAt.Format(timeFormat),
-		UpdatedAt:   user.UpdatedAt.Format(timeFormat),
+		// Role:        NewRoleResponse(user.UserRole.Role),
+		CreatedAt: user.CreatedAt.Format(timeFormat),
+		UpdatedAt: user.UpdatedAt.Format(timeFormat),
 	}
 }

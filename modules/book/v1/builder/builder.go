@@ -17,7 +17,6 @@ import (
 func BuildBookHandler(cfg config.Config, router *gin.Engine, db *gorm.DB, redisPool *redis.Pool, awsSession *session.Session) {
     // Repository
     br := bookRepo.NewBookRepository(db)
-    // Add other book-related repositories as needed.
 
     cloudStorage := gcs.NewGoogleCloudStorage(cfg)
 

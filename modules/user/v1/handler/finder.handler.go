@@ -285,3 +285,35 @@ func (uf *UserFinderHandler) GetUserPermissions(c *gin.Context) {
 		Total: int64(len(res)),
 	}))
 }
+
+
+//GetUser Role is a hand for get list role of user
+func (uf *UserFinderHandler)GetUserRoles(c *gin.Context){
+	var request resource.GetAdminUsersRequest
+
+	if err := c.ShouldBind(&request); err != nil {
+		c.JSON(http.StatusBadRequest, response.ErrorAPIResponse(http.StatusBadRequest, err.Error()))
+		c.Abort()
+		return
+	}
+
+	userRoles, total, err := uf.userFinder.GetUserRoles(c, request.Query, request.Sort, request.Order, request.Limit, request.Offset)
+
+	if err != nil {
+		parseError := errors.ParseError(err)
+		c.JSON(parseError.Code, response.ErrorAPIResponse(parseError.Code, parseError.Message))
+		c.Abort()
+		return
+	}
+
+	res := make([]*resource.UserRole, 0)
+
+	for _, u := range userRoles {
+		res = append(res, resource.NewUserRole(u))
+	}
+
+	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success", &resource.GetUserRoleRespone{
+		List:  res,
+		Total: total,
+	}))
+}

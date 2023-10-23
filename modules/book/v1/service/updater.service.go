@@ -37,7 +37,6 @@ func NewBookUpdater(cfg config.Config, bookRepo repository.BookRepositoryUseCase
 
 // UpdateBook updates a book.
 func (uu *BookUpdater) UpdateBook(ctx context.Context, book *entity.Book, bookID uuid.UUID) error {
-
 	title := strings.TrimSpace(book.Title)
 	trimmed := strings.TrimSpace(strings.ReplaceAll(title, " ", ""))
     

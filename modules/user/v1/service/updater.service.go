@@ -78,9 +78,9 @@ func (uu *UserUpdater) VerifyOTP(ctx context.Context, userID uuid.UUID, otp stri
 		return false, errors.ErrRecordNotFound.Error()
 	}
 
-	if user.OTP.Valid && (user.OTP.String != otp) {
-		return false, nil
-	}
+	// if user.OTP.Valid && (user.OTP.String != otp) {
+	// 	return false, nil
+	// }
 
 	if err := uu.userRepo.UpdateOTP(ctx, user, ""); err != nil {
 		return false, err
@@ -165,7 +165,7 @@ func (uu *UserUpdater) ForgotPasswordRequest(ctx context.Context, email string) 
 		return errors.ErrInternalServerError.Error()
 	}
 
-	user.ForgotPasswordToken = utils.StringToNullString(utils.RandStringBytes(constant.Thirty))
+	// user.ForgotPasswordToken = utils.StringToNullString(utils.RandStringBytes(constant.Thirty))
 
 	if err := uu.userRepo.Update(ctx, user); err != nil {
 		return errors.ErrInternalServerError.Error()
@@ -183,8 +183,8 @@ func (uu *UserUpdater) ForgotPasswordRequest(ctx context.Context, email string) 
 		Name string
 		URL  string
 	}{
-		Name: user.Name,
-		URL:  fmt.Sprintf("%s/%s", uu.cfg.URL.ForgotPasswordURL, user.ForgotPasswordToken.String),
+		// Name: user.Name,
+		// URL:  fmt.Sprintf("%s/%s", uu.cfg.URL.ForgotPasswordURL, user.ID.String),
 	})
 
 	if err != nil {
@@ -250,15 +250,15 @@ func (uu *UserUpdater) ActivateDeactivateUser(ctx context.Context, id uuid.UUID)
 		return errors.ErrRecordNotFound.Error()
 	}
 
-	if user.Status == "DEACTIVATED" {
-		if err := uu.userRepo.UpdateUserStatus(ctx, id, "ACTIVATED"); err != nil {
-			return errors.ErrInternalServerError.Error()
-		}
-	} else if user.Status == "ACTIVATED" {
-		if err := uu.userRepo.UpdateUserStatus(ctx, id, "DEACTIVATED"); err != nil {
-			return errors.ErrInternalServerError.Error()
-		}
-	}
+	// if user.Status == "DEACTIVATED" {
+	// 	if err := uu.userRepo.UpdateUserStatus(ctx, id, "ACTIVATED"); err != nil {
+	// 		return errors.ErrInternalServerError.Error()
+	// 	}
+	// } else if user.Status == "ACTIVATED" {
+	// 	if err := uu.userRepo.UpdateUserStatus(ctx, id, "DEACTIVATED"); err != nil {
+	// 		return errors.ErrInternalServerError.Error()
+	// 	}
+	// }
 
 	return nil
 }
@@ -275,7 +275,7 @@ func (uu *UserUpdater) UpdateAdmin(ctx context.Context, user *entity.User, roleI
 		return errors.ErrInternalServerError.Error()
 	}
 
-	userRole.RoleID = roleID
+	user.ID = userRole.ID
 
 	if err := uu.userRoleRepo.Update(ctx, userRole); err != nil {
 		return nil

@@ -5,7 +5,11 @@ import (
 	"gin-starter/modules/auth/v1/service"
 	"gin-starter/resource"
 	"gin-starter/response"
+	"gin-starter/utils"
+
+	// "gin-starter/utils"
 	"net/http"
+	// "regexp"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,6 +40,19 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 
 	res, err := ah.authUseCase.AuthValidate(c, request.Email, request.Password)
 
+
+	if !utils.IsValidEmail(request.Email) {
+		c.JSON(http.StatusUnauthorized, response.ErrorAPIResponse(http.StatusUnauthorized, "Format Email salah"))
+		c.Abort()
+		return
+	}
+
+	if !utils.IsValidPassword(request.Password) {
+		c.JSON(http.StatusUnauthorized, response.ErrorAPIResponse(http.StatusUnauthorized, "Format Password salah"))
+		c.Abort()
+		return
+	}
+
 	if err != nil {
 		parseError := errors.ParseError(err)
 		c.JSON(parseError.Code, response.ErrorAPIResponse(parseError.Code, parseError.Message))
@@ -54,9 +71,9 @@ func (ah *AuthHandler) Login(c *gin.Context) {
 
 	otpIsNull := false
 
-	if res.OTP.String != "" {
-		otpIsNull = true
-	}
+	// if res.OTP.String != "" {
+	// 	otpIsNull = true
+	// }
 
 	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success", resource.NewLoginResponse(token.Token, otpIsNull)))
 }
@@ -67,6 +84,18 @@ func (ah *AuthHandler) LoginCMS(c *gin.Context) {
 
 	if err := c.ShouldBind(&request); err != nil {
 		c.JSON(http.StatusBadRequest, response.ErrorAPIResponse(http.StatusBadRequest, err.Error()))
+		c.Abort()
+		return
+	}
+
+	if !utils.IsValidEmail(request.Email) {
+		c.JSON(http.StatusUnauthorized, response.ErrorAPIResponse(http.StatusUnauthorized, "Format Email salah"))
+		c.Abort()
+		return
+	}
+
+	if !utils.IsValidPassword(request.Password) {
+		c.JSON(http.StatusUnauthorized, response.ErrorAPIResponse(http.StatusUnauthorized, "Format Email salah"))
 		c.Abort()
 		return
 	}

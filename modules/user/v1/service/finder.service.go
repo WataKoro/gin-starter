@@ -39,6 +39,9 @@ type UserFinderUseCase interface {
 	GetPermissions(ctx context.Context) ([]*entity.Permission, error)
 	// GetUserPermissions gets all user permissions
 	GetUserPermissions(ctx context.Context, userID uuid.UUID) ([]*entity.Permission, error)
+	// GetUserRoles gets all user roles
+	GetUserRoles(ctx context.Context, query, order, sort string, limit, offset int) ([]*entity.UserRole, int64, error)
+
 }
 
 // NewUserFinder creates a new UserFinder
@@ -168,7 +171,7 @@ func (uf *UserFinder) GetUserPermissions(ctx context.Context, userID uuid.UUID) 
 		return nil, errors.ErrRecordNotFound.Error()
 	}
 
-	role, err := uf.roleRepo.FindByID(ctx, userRole.RoleID)
+	role, err := uf.roleRepo.FindByID(ctx, userRole.ID)
 	if err != nil {
 		return nil, errors.ErrInternalServerError.Error()
 	}
@@ -183,4 +186,15 @@ func (uf *UserFinder) GetUserPermissions(ctx context.Context, userID uuid.UUID) 
 	}
 
 	return permissions, nil
+}
+
+// GetUsers Roles gets all User Roles
+func (uf *UserFinder) GetUserRoles(ctx context.Context, query, sort, order string, limit, offset int) ([]*entity.UserRole, int64, error) {
+	userroles, total, err := uf.userRoleRepo.GetUserRoles(ctx, query, sort, order, limit, offset)
+
+	if err != nil {
+		return nil, 0, errors.ErrInternalServerError.Error()
+	}
+
+	return userroles, total, nil
 }

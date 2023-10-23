@@ -17,7 +17,7 @@ type BookFinder struct {
 
 // BookFinderUseCase is a use case for books
 type BookFinderUseCase interface {
-	GetBooks(ctx context.Context) ([]*entity.Book, error)
+	GetBooks(ctx context.Context, page int, pageSize int, sortOrder string, search string, author string, genre string) ([]*entity.Book, error)
 	GetBookByID(ctx context.Context, id uuid.UUID) (*entity.Book, error)
 }
 
@@ -30,8 +30,9 @@ func NewBookFinder(cfg config.Config, bookRepo repository.BookRepositoryUseCase)
 }
 
 // GetBooks gets all books
-func (bf *BookFinder) GetBooks(ctx context.Context) ([]*entity.Book, error) {
-    books, err := bf.bookRepo.GetBooks(ctx)
+func (bf *BookFinder) GetBooks(ctx context.Context, page int, pageSize int, sortOrder string, search string, author string, genre string) ([]*entity.Book, error) {
+    
+	books, err := bf.bookRepo.GetBooks(ctx, page, pageSize, sortOrder, search, author, genre)
 
     if err != nil {
         return nil, err

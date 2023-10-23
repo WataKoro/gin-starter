@@ -1,11 +1,11 @@
 package resource
 
 import (
-	"mime/multipart"
-	"os"
+	// "mime/multipart"
+	// "os"
 
 	"gin-starter/entity"
-	"gin-starter/utils"
+	// "gin-starter/utils"
 )
 
 const (
@@ -17,28 +17,22 @@ type UpdateUserRequest struct {
 	Name        string                `form:"name" json:"name"`
 	Email       string                `form:"email" json:"email"`
 	DOB         string                `form:"dob" json:"dob"`
-	PhoneNumber string                `form:"phone_number" json:"phone_number"`
-	Photo       *multipart.FileHeader `form:"photo" json:"photo"`
 }
 
 type UserProfile struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Email       string `json:"email"`
-	OTPIsNull   bool   `json:"otp_is_null"`
-	PhoneNumber string `json:"phone_number"`
-	DOB         string `json:"dob"`
-	Status      string `json:"status"`
-	Photo       string `json:"photo"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	DOB       string `json:"dob"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 func NewUserProfile(user *entity.User) *UserProfile {
-	otpIsNull := false
-	if user.OTP.String != "" {
-		otpIsNull = true
-	}
+	// otpIsNull := false
+	// if user.OTP.String != "" {
+	// 	otpIsNull = true
+	// }
 
 	dob := "1970-01-01"
 	if user.DOB.Valid {
@@ -46,16 +40,12 @@ func NewUserProfile(user *entity.User) *UserProfile {
 	}
 
 	return &UserProfile{
-		ID:          user.ID.String(),
-		Name:        user.Name,
-		Email:       user.Email,
-		PhoneNumber: user.PhoneNumber,
-		DOB:         dob,
-		Photo:       utils.ImageFullPath(os.Getenv("IMAGE_HOST"), user.Photo),
-		Status:      user.Status,
-		OTPIsNull:   otpIsNull,
-		CreatedAt:   user.CreatedAt.Format(timeFormat),
-		UpdatedAt:   user.UpdatedAt.Format(timeFormat),
+		ID:        user.ID.String(),
+		Name:      user.Name,
+		Email:     user.Email,
+		DOB:       dob,
+		CreatedAt: user.CreatedAt.Format(timeFormat),
+		UpdatedAt: user.UpdatedAt.Format(timeFormat),
 	}
 }
 

@@ -13,7 +13,7 @@ type RolePermission struct {
 	ID           uuid.UUID   `json:"id"`
 	RoleID       uuid.UUID   `json:"role_id"`
 	PermissionID uuid.UUID   `json:"permission_id"`
-	Permission   *Permission `gorm:"ForeignKey:PermissionID;AssociationForeignKey:ID` //nolint
+	Permission   *Permission `json:"permission,omitempty"` 
 	Auditable
 }
 

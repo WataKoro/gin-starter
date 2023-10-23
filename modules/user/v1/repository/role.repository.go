@@ -234,7 +234,7 @@ func (nc *RoleRepository) Update(ctx context.Context, role *entity.Role, rolePer
 
 		// delete role permission
 		if err := tx.Model(&entity.RolePermission{}).
-			Where("role_id = ?", role.ID).
+			Where("roleid = ?", role.ID).
 			Unscoped().
 			Delete(&entity.RolePermission{}).
 			Error; err != nil {

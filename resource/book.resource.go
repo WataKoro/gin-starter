@@ -30,6 +30,7 @@ type UpdateBookRequest struct {
 
 type BookListResponse struct {
 	List  []*BookResponse `json:"list"`
+	Page int `json:"page"`
 	Total int64       `json:"total"`
 }
 

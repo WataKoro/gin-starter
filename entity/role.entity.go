@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	roleTableName = "main.roles"
+	roleTableName = "main.public.role"
 )
 
 // Role defines table role

@@ -21,7 +21,7 @@ type BookRepositoryUseCase interface {
     // CreateBook creates a new Book
     CreateBook(ctx context.Context, book *entity.Book) error
     // GetBooks returns a list of books
-    GetBooks(ctx context.Context) ([]*entity.Book, error)
+    GetBooks(ctx context.Context, page int, pageSize int, sortOrder string, search string, author string, genre string) ([]*entity.Book, error)
     // GetBookByID returns a book by its ID
     GetBookByID(ctx context.Context, id uuid.UUID) (*entity.Book, error)
     DeleteBookByID(ctx context.Context, id uuid.UUID) error
@@ -49,19 +49,67 @@ func (repo *BookRepository) CreateBook(ctx context.Context, book *entity.Book) e
     return nil
 }
 
-
 // GetBooks returns a list of books
-func (repo *BookRepository) GetBooks(ctx context.Context) ([]*entity.Book, error) {
+func (repo *BookRepository) GetBooks(ctx context.Context, page int, pageSize int, sortOrder string, search string, author string, genre string) ([]*entity.Book, error) {
+    offset := (page - 1) * pageSize
     models := make([]*entity.Book, 0)
-    if err := repo.gormDB.
+    
+    var orderClause string
+
+    searchCondition := ""
+    conditions := []interface{}{search}
+    
+    if search != "" {
+        searchCondition = "title LIKE ?"
+        search = "%" + search + "%"
+    }
+
+    if strings.ToLower(sortOrder) == "desc" {
+        orderClause = "title DESC"
+    } else {
+        orderClause = "title ASC"
+    }
+
+    attributeConditions := []string{}
+    if author != "" {
+        attributeConditions = append(attributeConditions, "author = ?")
+        conditions = append(conditions, author)
+    }
+    if genre != "" {
+        attributeConditions = append(attributeConditions, "genre = ?")
+        conditions = append(conditions, genre)
+    }
+
+    attributeCondition := strings.Join(attributeConditions, " AND ")
+
+    if attributeCondition != "" {
+        attributeCondition = "(" + attributeCondition + ")"
+    }
+    
+    query := repo.gormDB.
         WithContext(ctx).
         Model(&entity.Book{}).
+        Offset(offset).
+        Limit(pageSize)
+
+    if searchCondition != "" {
+        query = query.Where(searchCondition, conditions[0])
+    }
+
+    if attributeCondition != "" {
+        query = query.Where(attributeCondition, conditions[1:]...)
+    }
+
+    if err := query.Order(orderClause).
         Find(&models).
         Error; err != nil {
         return nil, errors.Wrap(err, "[BookRepository-GetBooks]")
     }
     return models, nil
 }
+
+
+
 
 // GetBookByID returns a book by its ID
 func (repo *BookRepository) GetBookByID(ctx context.Context, id uuid.UUID) (*entity.Book, error) {
@@ -86,6 +134,7 @@ func (repo *BookRepository) FindAll(ctx context.Context) ([]*entity.Book, error)
 	if err := repo.gormDB.
 		WithContext(ctx).
 		Model(&entity.Book{}).
+        Limit(5).
 		Find(&models).
 		Error; err != nil {
 		return nil, errors.Wrap(err, "[BookRepository-FindAll]")
@@ -120,7 +169,6 @@ func (repo *BookRepository) FindBookByTitle(ctx context.Context, title string) (
 
 
 func (repo *BookRepository) UpdateBook(ctx context.Context, book *entity.Book, bookID uuid.UUID) error {
-    // Your implementation here
     if err := repo.gormDB.
         WithContext(ctx).
         Model(&entity.Book{}).

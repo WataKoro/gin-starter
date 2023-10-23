@@ -56,6 +56,35 @@ func (ud *UserDeleterHandler) DeleteAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success", nil))
 }
 
+// DeleteUser is a handler for deleting an user
+func (ud *UserDeleterHandler) DeleteUsers(c *gin.Context) {
+	var request resource.DeleteUserRequest
+
+	if err := c.ShouldBindUri(&request); err != nil {
+		c.JSON(http.StatusBadRequest, response.ErrorAPIResponse(http.StatusBadRequest, err.Error()))
+		c.Abort()
+		return
+	}
+
+	reqID, err := uuid.Parse(request.ID)
+
+	if err != nil {
+		c.JSON(errors.ErrInvalidArgument.Code, response.ErrorAPIResponse(errors.ErrInvalidArgument.Code, errors.ErrInvalidArgument.Message))
+		c.Abort()
+		return
+	}
+
+	if err := ud.userDeleter.DeleteUsers(c, reqID); err != nil {
+		parseError := errors.ParseError(err)
+		c.JSON(parseError.Code, response.ErrorAPIResponse(parseError.Code, parseError.Message))
+		c.Abort()
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "Data Delete Success", nil))
+}
+
+
 // DeleteRole is a handler for delete role
 func (ud *UserDeleterHandler) DeleteRole(c *gin.Context) {
 	var request resource.DeleteRoleRequest
@@ -82,4 +111,31 @@ func (ud *UserDeleterHandler) DeleteRole(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success", nil))
+}
+
+//DeleteUserRole is a handler for delete user role
+func (ud *UserDeleterHandler) DeleteUserRole(c*gin.Context){
+	var request resource.DeleteUserRoleRequest
+
+	if err := c.ShouldBindUri(&request); err != nil {
+		c.JSON(http.StatusBadRequest, response.ErrorAPIResponse(http.StatusBadRequest, err.Error()))
+		c.Abort()
+		return
+	}
+
+	reqID, err := uuid.Parse(request.ID)
+
+	if err != nil {
+		c.JSON(errors.ErrInvalidArgument.Code, response.ErrorAPIResponse(errors.ErrInvalidArgument.Code, errors.ErrInvalidArgument.Message))
+		c.Abort()
+		return
+	}
+
+	if err := ud.userDeleter.DeleteUserRole(c, reqID); err != nil {
+		parseError := errors.ParseError(err)
+		c.JSON(parseError.Code, response.ErrorAPIResponse(parseError.Code, parseError.Message))
+		c.Abort()
+		return
+	}
+	c.JSON(http.StatusOK, response.SuccessAPIResponseList(http.StatusOK, "success role berhasil terhapus", nil))
 }
