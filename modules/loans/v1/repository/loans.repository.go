@@ -7,6 +7,7 @@ import (
     "github.com/google/uuid"
     "gorm.io/gorm"
     "log"
+    //"strings"
 )
 
 type LoanRepository struct {
@@ -16,9 +17,9 @@ type LoanRepository struct {
 // LoanRepositoryUseCase is an interface for Loan repository use case
 type LoanRepositoryUseCase interface {
     CreateLoanRequest(ctx context.Context, loan *entity.Loan) error
-    GetLoanRequests(ctx context.Context) ([]*entity.Loan, error)
+    GetLoanRequests(ctx context.Context, page int, pageSize int, sortOrder string, status int) ([]*entity.Loan, error)
     GetLoanRequestByID(ctx context.Context, id uuid.UUID) (*entity.Loan, error)
-    ApproveLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error
+    UpdateLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error
 }
 
 func NewLoanRepository(
@@ -41,17 +42,32 @@ func (repo *LoanRepository) CreateLoanRequest(ctx context.Context, loan *entity.
 }
 
 // GetLoanRequests returns a list of loan requests
-func (repo *LoanRepository) GetLoanRequests(ctx context.Context) ([]*entity.Loan, error) {
+func (repo *LoanRepository) GetLoanRequests(ctx context.Context, page int, pageSize int, sortOrder string, status int) ([]*entity.Loan, error) {
+    offset := (page - 1) * pageSize
     models := make([]*entity.Loan, 0)
-    if err := repo.gormDB.
+
+    query := repo.gormDB.
         WithContext(ctx).
         Model(&entity.Loan{}).
+        Select("loanrequest.*, u.name as name, b.title as title").
+        Joins("INNER JOIN main.users u ON loanrequest.user_id = u.id").
+        Joins("INNER JOIN main.book b ON loanrequest.book_id = b.id").
+        Offset(offset).
+        Limit(pageSize)
+
+    if status != 0 {
+        query = query.Where("loanrequest.status = ?", status)
+    }
+
+    if err := query.Order("loanrequest.requested_at ASC").
         Find(&models).
         Error; err != nil {
         return nil, errors.Wrap(err, "[LoanRepository-GetLoanRequests]")
     }
+
     return models, nil
 }
+
 
 // GetLoanRequestByID returns a loan request by its ID
 func (repo *LoanRepository) GetLoanRequestByID(ctx context.Context, id uuid.UUID) (*entity.Loan, error) {
@@ -59,18 +75,23 @@ func (repo *LoanRepository) GetLoanRequestByID(ctx context.Context, id uuid.UUID
     if err := repo.gormDB.
         WithContext(ctx).
         Model(&entity.Loan{}).
-        Where("id = ?", id).
+        Select("loanrequest.*, u.name as name, u.email as email, b.title as title, b.author as author, b.genre as genre, b.desc as desc").
+        Joins("INNER JOIN main.users u ON loanrequest.user_id = u.id").
+        Joins("INNER JOIN main.book b ON loanrequest.book_id = b.id").
+        Where("loanrequest.id = ?", id).
         First(loan).
         Error; err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            return nil, nil // Loan request not found
+            return nil, nil
         }
         return nil, errors.Wrap(err, "[LoanRepository-GetLoanRequestByID]")
     }
     return loan, nil
 }
 
-func (repo *LoanRepository) ApproveLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error {
+
+// UpdateLoan updates a loan
+func (repo *LoanRepository) UpdateLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error {
     if err := repo.gormDB.
         WithContext(ctx).
         Model(&entity.Loan{}).

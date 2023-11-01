@@ -15,17 +15,17 @@ import (
 // BuildLoanHandler builds loan handler
 func BuildLoanHandler(cfg config.Config, router *gin.Engine, db *gorm.DB, redisPool *redis.Pool, awsSession *session.Session) {
     // Repository
-    lr := loanRepo.NewLoanRepository(db)
+    loanRepository := loanRepo.NewLoanRepository(db)
 
     cloudStorage := gcs.NewGoogleCloudStorage(cfg)
 
     // Service
-    lc := loanService.NewLoanCreator(cfg, lr)
-    lf := loanService.NewLoanFinder(cfg, lr) 
-    lu := loanService.NewLoanUpdater(cfg, lr)
+    loanCreator := loanService.NewLoanCreator(cfg, loanRepository)
+    loanFinder := loanService.NewLoanFinder(cfg, loanRepository)
+    loanUpdater := loanService.NewLoanUpdater(cfg, loanRepository)
 
     // Handler
-    app.LoanFinderHTTPHandler(cfg, router, lf)
-    app.LoanCreatorHTTPHandler(cfg, router, lc, cloudStorage)
-    app.LoanUpdaterHTTPHandler(cfg, router, lu, lf, cloudStorage)
+    app.LoanFinderHTTPHandler(cfg, router, loanFinder)
+    app.LoanCreatorHTTPHandler(cfg, router, loanCreator, cloudStorage)
+    app.LoanUpdaterHTTPHandler(cfg, router, loanUpdater, loanFinder, cloudStorage)
 }

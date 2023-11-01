@@ -31,7 +31,9 @@ type UpdateBookRequest struct {
 type BookListResponse struct {
 	List  []*BookResponse `json:"list"`
 	Page int `json:"page"`
-	Total int64       `json:"total"`
+	PerPage int64       `json:"perpage"`
+	TotalBooks int64       `json:"totalBooks"`
+	TotalPages int64 `json:totalPages`
 }
 
 type DeleteBookRequest struct {

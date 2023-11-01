@@ -28,8 +28,8 @@ func NewLoanUpdaterHandler(
     }
 }
 
-// ApproveLoan is a handler for approving a loan
-func (lrh *LoanUpdaterHandler) ApproveLoan(c *gin.Context) {
+// UpdateLoan is a handler for updating a loan status
+func (lrh *LoanUpdaterHandler) UpdateLoan(c *gin.Context) {
     var request resource.UpdateLoanRequest
 
     if err := c.ShouldBind(&request); err != nil {
@@ -60,12 +60,11 @@ func (lrh *LoanUpdaterHandler) ApproveLoan(c *gin.Context) {
         return
     }
 
-    log.Print(request.Approved)
+    log.Print(request.Status)
 
-    loan.Approved = request.Approved
-    loan.Returned = request.Returned
+    loan.Status = request.Status
 
-    if err := lrh.loanUpdater.ApproveLoan(c, loan, loanID); err != nil {
+    if err := lrh.loanUpdater.UpdateLoan(c, loan, loanID); err != nil {
         parseError := errors.ParseError(err)
         c.JSON(parseError.Code, response.ErrorAPIResponse(parseError.Code, parseError.Message))
         c.Abort()

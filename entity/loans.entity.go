@@ -15,9 +15,29 @@ type Loan struct {
     BookID      string       `json:"bookid"`
     UserID      string       `json:"userid"`
     RequestedAt time.Time    `json:"requestedat"`
-    Approved    bool         `json:"approved"`
-    Returned    bool         `json:"returned"`
+    Status      int          `json:"status"`
     DueDate     time.Time    `json:"duedate"`
+    Title       string       `json:"title"`
+    Author      string       `json:"author"`
+    Genre       string       `json:"genre"`
+    Desc        string       `json:"desc"`
+    Name        string       `json:"name"`
+    Email       string       `json:"email"`
+}
+
+type LoanDetail struct {
+    ID          uuid.UUID    `json:"id"`
+    BookID      string       `json:"bookid"`
+    UserID      string       `json:"userid"`
+    RequestedAt time.Time    `json:"requestedat"`
+    Status      int          `json:"status"`
+    DueDate     time.Time    `json:"duedate"`
+    Title       string       `json:"title"`
+    Author      string       `json:"author"`
+    Genre       string       `json:"genre"`
+    Desc        string       `json:"desc"`
+    Name        string       `json:"name"`
+    Email       string       `json:"email"`
 }
 
 // TableName specifies table name
@@ -35,10 +55,11 @@ func NewLoan(
     return &Loan{
         ID:          id,
         BookID:      bookID,
+        Title:       "",
         UserID:      userID,
+        Name:        "",
         RequestedAt: time.Now(),
-        Approved:    false,
-        Returned:    false,
+        Status:      0,
         DueDate:     time.Now(),
     }
 }
@@ -49,9 +70,8 @@ func (model *Loan) MapUpdateFrom(from *Loan) *map[string]interface{} {
         return &map[string]interface{}{
             "bookid":      model.BookID,
             "userid":      model.UserID,
-            "requested_at": model.RequestedAt,
-            "approved":     model.Approved,
-            "returned":     model.Returned,
+            "requestedat": model.RequestedAt,
+            "status":      model.Status,
             "duedate":     model.DueDate,
         }
     }
@@ -66,13 +86,10 @@ func (model *Loan) MapUpdateFrom(from *Loan) *map[string]interface{} {
         mapped["userid"] = from.UserID
     }
 
-    if model.Approved != from.Approved {
-        mapped["approved"] = from.Approved
+    if model.Status != from.Status {
+        mapped["status"] = from.Status
     }
 
-    if model.Returned != from.Returned {
-        mapped["returned"] = from.Returned
-    }
     mapped["requestedat"] = time.Now()
     mapped["duedate"] = time.Now()
     return &mapped

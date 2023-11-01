@@ -17,7 +17,7 @@ type LoanFinder struct {
 
 // BookFinderUseCase is a use case for books
 type LoanFinderUseCase interface {
-	GetLoanRequests(ctx context.Context) ([]*entity.Loan, error)
+	GetLoanRequests(ctx context.Context, page int, pageSize int, sortOrder string, status int) ([]*entity.Loan, error)
 	GetLoanRequestByID(ctx context.Context, id uuid.UUID) (*entity.Loan, error)
 }
 
@@ -30,8 +30,8 @@ func NewLoanFinder(cfg config.Config, loanRepo repository.LoanRepositoryUseCase)
 }
 
 // GetBooks gets all books
-func (lf *LoanFinder) GetLoanRequests(ctx context.Context) ([]*entity.Loan, error) {
-    loans, err := lf.loanRepo.GetLoanRequests(ctx)
+func (lf *LoanFinder) GetLoanRequests(ctx context.Context, page int, pageSize int, sortOrder string, status int)  ([]*entity.Loan, error) {
+    loans, err := lf.loanRepo.GetLoanRequests(ctx, page, pageSize, sortOrder, status)
 
     if err != nil {
         return nil, err

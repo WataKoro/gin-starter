@@ -24,7 +24,7 @@ type LoanUpdater struct {
 }
 
 type LoanUpdaterUseCase interface {
-    ApproveLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error
+    UpdateLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error
 }
 
 // NewLoanUpdater is a constructor for the Loan updater
@@ -36,10 +36,10 @@ func NewLoanUpdater(cfg config.Config, loanRepo repository.LoanRepositoryUseCase
 }
 
 // UpdateLoan updates a loan.
-func (uu *LoanUpdater) ApproveLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error {   
-	if err := uu.loanRepo.ApproveLoan(ctx, loan, loanID); err != nil {
+func (uu *LoanUpdater) UpdateLoan(ctx context.Context, loan *entity.Loan, loanID uuid.UUID) error {   
+	if err := uu.loanRepo.UpdateLoan(ctx, loan, loanID); err != nil {
         return errors.ErrInternalServerError.Error()
     }
-    log.Println("Approve loan jalan")
+    log.Println("Update loan jalan")
     return nil
 }

@@ -92,12 +92,6 @@ func (uc *UserCreator) CreateAdmin(ctx context.Context, name string, email strin
 		return nil, errors.ErrInternalServerError.Error()
 	}
 
-	// userRole := entity.NewUserRole(uuid.New(), userID, roleID, "system")
-
-// 	if err := uc.userRoleRepo.CreateOrUpdate(ctx, userRole); err != nil {
-// 		return nil, errors.ErrInternalServerError.Error()
-// 	}
-
 	return user, nil
 }
 

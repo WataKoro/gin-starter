@@ -22,10 +22,6 @@ import (
 	userhandlerv1 "gin-starter/modules/user/v1/handler"
 	userservicev1 "gin-starter/modules/user/v1/service"
 	
-	// Book
-	bookhandlerv1 "gin-starter/modules/book/v1/handler"
-    bookservicev1 "gin-starter/modules/book/v1/service"
-	
 	// Loan
 	loanhandlerv1 "gin-starter/modules/loans/v1/handler"
     loanservicev1 "gin-starter/modules/loans/v1/service"
@@ -92,6 +88,15 @@ func NotificationUpdaterHTTPHandler(cfg config.Config, router *gin.Engine, cf no
 	}
 }
 
+// MasterCreatorHTTPHandler is a handler for master APIs
+func MasterCreatorHTTPHandler(cfg config.Config, router *gin.Engine, mc masterservicev1.MasterCreatorUseCase, cloudStorage interfaces.CloudStorageUseCase) {
+	_ = masterhandlerv1.NewMasterCreatorHandler(mc, cloudStorage)
+	v1 := router.Group("/v1")
+
+	v1.Use(middleware.Auth(cfg))
+	v1.Use(middleware.Admin(cfg))
+}
+
 // MasterFinderHTTPHandler is a handler for master APIs
 func MasterFinderHTTPHandler(cfg config.Config, router *gin.Engine, mf masterservicev1.MasterFinderUseCase) {
 	hnd := masterhandlerv1.NewMasterFinderHandler(mf)
@@ -102,15 +107,6 @@ func MasterFinderHTTPHandler(cfg config.Config, router *gin.Engine, mf masterser
 		v1.GET("/districts/:regency_id", hnd.GetDistrictsByRegencyID)
 		v1.GET("/villages/:district_id", hnd.GetVillagesByDistrictID)
 	}
-}
-
-// MasterCreatorHTTPHandler is a handler for master APIs
-func MasterCreatorHTTPHandler(cfg config.Config, router *gin.Engine, mc masterservicev1.MasterCreatorUseCase, cloudStorage interfaces.CloudStorageUseCase) {
-	_ = masterhandlerv1.NewMasterCreatorHandler(mc, cloudStorage)
-	v1 := router.Group("/v1")
-
-	v1.Use(middleware.Auth(cfg))
-	v1.Use(middleware.Admin(cfg))
 }
 
 // UserFinderHTTPHandler is a handler for user APIs
@@ -199,8 +195,8 @@ func UserDeleterHTTPHandler(cfg config.Config, router *gin.Engine, ud userservic
 }
 
 // BookCreatorHTTPHandler is a handler for book APIs
-func BookCreatorHTTPHandler(cfg config.Config, router *gin.Engine, uc bookservicev1.BookCreatorUseCase, uf bookservicev1.BookFinderUseCase, cloudStorage interfaces.CloudStorageUseCase) {
-	hnd := bookhandlerv1.NewBookCreatorHandler(uc, cloudStorage)
+func BookCreatorHTTPHandler(cfg config.Config, router *gin.Engine, uc masterservicev1.BookCreatorUseCase, uf masterservicev1.BookFinderUseCase, cloudStorage interfaces.CloudStorageUseCase) {
+	hnd := masterhandlerv1.NewBookCreatorHandler(uc, cloudStorage)
 	v1 := router.Group("/v1")
 
 	v1.Use(middleware.Auth(cfg))
@@ -211,8 +207,8 @@ func BookCreatorHTTPHandler(cfg config.Config, router *gin.Engine, uc bookservic
 }
 
 // BookFinderHTTPHandler is a handler for book APIs
-func BookFinderHTTPHandler(cfg config.Config, router *gin.Engine, cf bookservicev1.BookFinderUseCase) {
-	hnd := bookhandlerv1.NewBookFinderHandler(cf)
+func BookFinderHTTPHandler(cfg config.Config, router *gin.Engine, cf masterservicev1.BookFinderUseCase) {
+	hnd := masterhandlerv1.NewBookFinderHandler(cf)
 	v1 := router.Group("/v1")
 	{
 		log.Println("masuk finder")
@@ -221,8 +217,8 @@ func BookFinderHTTPHandler(cfg config.Config, router *gin.Engine, cf bookservice
 }
 
 // BookDeleterHTTPHandler is a handler for book APIs
-func BookDeleterHTTPHandler(cfg config.Config, router *gin.Engine, ud bookservicev1.BookDeleterUseCase, cloudStorage interfaces.CloudStorageUseCase) {
-	hnd := bookhandlerv1.NewBookDeleterHandler(ud, cloudStorage)
+func BookDeleterHTTPHandler(cfg config.Config, router *gin.Engine, ud masterservicev1.BookDeleterUseCase, cloudStorage interfaces.CloudStorageUseCase) {
+	hnd := masterhandlerv1.NewBookDeleterHandler(ud, cloudStorage)
 	v1 := router.Group("/v1")
 
 	v1.Use(middleware.Auth(cfg))
@@ -233,8 +229,8 @@ func BookDeleterHTTPHandler(cfg config.Config, router *gin.Engine, ud bookservic
 }
 
 // BookUpdaterHTTPHandler is a handler for book APIs
-func BookUpdaterHTTPHandler(cfg config.Config, router *gin.Engine, uu bookservicev1.BookUpdaterUseCase, uf bookservicev1.BookFinderUseCase, cloudStorage interfaces.CloudStorageUseCase) {
-	hnd := bookhandlerv1.NewBookUpdaterHandler(uu, uf)
+func BookUpdaterHTTPHandler(cfg config.Config, router *gin.Engine, uu masterservicev1.BookUpdaterUseCase, uf masterservicev1.BookFinderUseCase, cloudStorage interfaces.CloudStorageUseCase) {
+	hnd := masterhandlerv1.NewBookUpdaterHandler(uu, uf)
 	v1 := router.Group("/v1")
 
 	v1.Use(middleware.Auth(cfg))
@@ -261,7 +257,7 @@ func LoanUpdaterHTTPHandler(cfg config.Config, router *gin.Engine, lu loanservic
 	v1.Use(middleware.Auth(cfg))
 	v1.Use(middleware.Admin(cfg))
 	{
-		v1.PUT("/loan/update/:id", hnd.ApproveLoan)
+		v1.PUT("/loan/update/:id", hnd.UpdateLoan)
 	}
 }
 
@@ -271,5 +267,6 @@ func LoanFinderHTTPHandler(cfg config.Config, router *gin.Engine, lf loanservice
 	v1 := router.Group("/v1")
 	{
 		v1.GET("/loan/list", hnd.GetLoanRequests)
+		v1.GET("/loan/details/:id", hnd.GetLoanRequestByID)
 	}
 }
